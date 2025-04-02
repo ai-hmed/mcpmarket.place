@@ -433,6 +433,7 @@ export function useServers() {
   const fetchServers = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       // Build query parameters
       const params = new URLSearchParams();

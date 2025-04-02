@@ -72,6 +72,7 @@ export async function POST(request: Request) {
     console.log("Inserting server data:", JSON.stringify(serverData, null, 2));
 
     // Insert the server into the database with better error handling
+    let insertedData = null;
     try {
       const { data, error } = await supabase
         .from("servers")
@@ -99,6 +100,8 @@ export async function POST(request: Request) {
           { status: 500 },
         );
       }
+
+      insertedData = data[0];
     } catch (dbError: any) {
       console.error("Exception during server insertion:", dbError);
       return NextResponse.json(
@@ -112,7 +115,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       message: "Server imported successfully",
-      server: data[0],
+      server: insertedData,
     });
   } catch (error: any) {
     console.error("Error in GitHub import API:", error);

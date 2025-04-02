@@ -1,4 +1,4 @@
--- Create blog_posts table
+-- Create blog_posts table if it doesn't exist
 CREATE TABLE IF NOT EXISTS blog_posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   view_count INTEGER DEFAULT 0
 );
 
--- Create blog_categories table
+-- Create blog_categories table if it doesn't exist
 CREATE TABLE IF NOT EXISTS blog_categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS blog_categories (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create blog_tags table
+-- Create blog_tags table if it doesn't exist
 CREATE TABLE IF NOT EXISTS blog_tags (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS blog_tags (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create blog_posts_categories junction table
+-- Create blog_posts_categories junction table if it doesn't exist
 CREATE TABLE IF NOT EXISTS blog_posts_categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   post_id UUID REFERENCES blog_posts(id) ON DELETE CASCADE,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS blog_posts_categories (
   UNIQUE(post_id, category_id)
 );
 
--- Create blog_posts_tags junction table
+-- Create blog_posts_tags junction table if it doesn't exist
 CREATE TABLE IF NOT EXISTS blog_posts_tags (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   post_id UUID REFERENCES blog_posts(id) ON DELETE CASCADE,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS blog_posts_tags (
   UNIQUE(post_id, tag_id)
 );
 
--- Create seo_pages table
+-- Create seo_pages table if it doesn't exist
 CREATE TABLE IF NOT EXISTS seo_pages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS seo_pages (
   updated_at TIMESTAMPTZ
 );
 
--- Create seo_keywords table
+-- Create seo_keywords table if it doesn't exist
 CREATE TABLE IF NOT EXISTS seo_keywords (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   keyword TEXT NOT NULL UNIQUE,

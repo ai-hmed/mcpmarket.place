@@ -15,10 +15,32 @@ export default async function Navbar() {
   return (
     <nav className="w-full border-b border-border bg-background py-4">
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link href="/" prefetch className="text-xl font-bold">
-          <span className="text-primary">MCP</span>Market
-          <span className="text-blue-500">.place</span>
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" prefetch className="text-xl font-bold">
+            <span className="text-primary">MCP</span>Market
+            <span className="text-blue-500">.place</span>
+          </Link>
+          <div className="hidden md:flex gap-6">
+            <Link
+              href="/servers"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Servers
+            </Link>
+            <Link
+              href="/blog"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Blog
+            </Link>
+            <Link
+              href="/resources"
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Resources
+            </Link>
+          </div>
+        </div>
         <div className="flex gap-4 items-center">
           <ThemeSwitcher />
           {user ? (

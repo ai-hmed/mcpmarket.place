@@ -116,44 +116,48 @@ export function useNotifications() {
   // Set up real-time notifications with Supabase
   useEffect(() => {
     const setupRealtimeNotifications = async () => {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      // Subscribe to notifications table changes
-      const channel = supabase
-        .channel("notifications-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-          },
-          (payload) => {
-            // Add new notification to state
-            const newNotification = payload.new as any;
-            setNotifications((prev) => [
-              {
-                id: newNotification.id,
-                title: newNotification.title,
-                message: newNotification.message,
-                type: newNotification.type as
-                  | "info"
-                  | "success"
-                  | "warning"
-                  | "error",
-                read: newNotification.read,
-                timestamp: new Date(newNotification.created_at),
-              },
-              ...prev,
-            ]);
-          },
-        )
-        .subscribe();
+        // Subscribe to notifications table changes
+        const channel = supabase
+          .channel("notifications-changes")
+          .on(
+            "postgres_changes",
+            {
+              event: "INSERT",
+              schema: "public",
+              table: "notifications",
+            },
+            (payload) => {
+              // Add new notification to state
+              const newNotification = payload.new as any;
+              setNotifications((prev) => [
+                {
+                  id: newNotification.id,
+                  title: newNotification.title,
+                  message: newNotification.message,
+                  type: newNotification.type as
+                    | "info"
+                    | "success"
+                    | "warning"
+                    | "error",
+                  read: newNotification.read,
+                  timestamp: new Date(newNotification.created_at),
+                },
+                ...prev,
+              ]);
+            },
+          )
+          .subscribe();
 
-      // Cleanup subscription on unmount
-      return () => {
-        supabase.removeChannel(channel);
-      };
+        // Cleanup subscription on unmount
+        return () => {
+          supabase.removeChannel(channel);
+        };
+      } catch (error) {
+        console.error("Error setting up realtime notifications:", error);
+      }
     };
 
     setupRealtimeNotifications();

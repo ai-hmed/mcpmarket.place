@@ -14,6 +14,15 @@ export default function UserProfile() {
   const supabase = createClient();
   const router = useRouter();
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.refresh();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -22,14 +31,7 @@ export default function UserProfile() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={async () => {
-            await supabase.auth.signOut();
-            router.refresh();
-          }}
-        >
-          Sign out
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -4,21 +4,42 @@ import { cookies } from "next/headers";
 export const createClient = async () => {
   const cookieStore = cookies();
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name, value, options) {
-          cookieStore.set(name, value, options);
-        },
-        remove(name, options) {
-          cookieStore.set(name, "", { ...options, maxAge: 0 });
+  // Check for both sets of environment variables
+  const supabaseUrl =
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey =
+    process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error(
+      "Supabase environment variables are not set. Please ensure SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL and SUPABASE_ANON_KEY/NEXT_PUBLIC_SUPABASE_ANON_KEY are defined.",
+    );
+    throw new Error(
+      "Supabase credentials not found. Please check your environment variables.",
+    );
+  }
+
+  try {
+    return createServerClient(
+      supabaseUrl,
+      supabaseServiceKey || supabaseAnonKey, // Prefer service key for server operations if available
+      {
+        cookies: {
+          get(name) {
+            return cookieStore.get(name)?.value;
+          },
+          set(name, value, options) {
+            cookieStore.set(name, value, options);
+          },
+          remove(name, options) {
+            cookieStore.set(name, "", { ...options, maxAge: 0 });
+          },
         },
       },
-    },
-  );
+    );
+  } catch (error) {
+    console.error("Error creating Supabase server client:", error);
+    throw error;
+  }
 };
