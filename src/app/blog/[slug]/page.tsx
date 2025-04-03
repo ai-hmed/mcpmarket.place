@@ -77,7 +77,21 @@ async function getRelatedPosts(postId: string, categoryIds: string[]) {
   const supabase = await createClient();
 
   try {
-    // Get posts in the same categories, excluding the current post
+    // First get post IDs from the same categories
+    const { data: categoryPostIds, error: categoryError } = await supabase
+      .from("blog_posts_categories")
+      .select("post_id")
+      .in("category_id", categoryIds);
+
+    if (categoryError) {
+      console.error("Error fetching category post IDs:", categoryError);
+      return [];
+    }
+
+    // Extract the post IDs from the result
+    const postIds = categoryPostIds.map((item) => item.post_id);
+
+    // Then get the related posts using those IDs
     const { data: relatedPosts, error } = await supabase
       .from("blog_posts")
       .select(
@@ -88,13 +102,7 @@ async function getRelatedPosts(postId: string, categoryIds: string[]) {
       )
       .neq("id", postId)
       .eq("published", true)
-      .in(
-        "id",
-        supabase
-          .from("blog_posts_categories")
-          .select("post_id")
-          .in("category_id", categoryIds),
-      )
+      .in("id", postIds)
       .limit(3);
 
     if (error) {
