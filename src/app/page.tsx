@@ -253,8 +253,9 @@ export default function Home() {
               Featured Apps
             </h2>
             <Link
-              href="/dashboard"
+              href="/servers"
               className="text-sm text-muted-foreground hover:text-foreground flex items-center"
+              aria-label="View all featured apps"
             >
               View all
               <ArrowRight className="ml-1 h-4 w-4" />
@@ -293,8 +294,9 @@ export default function Home() {
               </h2>
             </div>
             <Link
-              href="/dashboard"
+              href="/servers?sort=trending"
               className="text-sm text-muted-foreground hover:text-foreground flex items-center"
+              aria-label="View all trending apps"
             >
               View all
               <ArrowRight className="ml-1 h-4 w-4" />
