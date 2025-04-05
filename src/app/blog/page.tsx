@@ -116,16 +116,18 @@ export default async function BlogPage() {
                   <div className="p-6">
                     <div className="flex flex-wrap gap-2 mb-3">
                       {featuredPost.categories &&
-                        featuredPost.categories.map((category, index) => (
-                          <Link
-                            key={index}
-                            href={`/blog/category/${category.category_id.slug}`}
-                          >
-                            <Badge variant="secondary">
-                              {category.category_id.name}
-                            </Badge>
-                          </Link>
-                        ))}
+                        featuredPost.categories.map(
+                          (category: any, index: number) => (
+                            <Link
+                              key={index}
+                              href={`/blog/category/${category.category_id.slug}`}
+                            >
+                              <Badge variant="secondary">
+                                {category.category_id.name}
+                              </Badge>
+                            </Link>
+                          ),
+                        )}
                     </div>
                     <Link href={`/blog/${featuredPost.slug}`}>
                       <h3 className="text-2xl font-bold mb-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -171,7 +173,7 @@ export default async function BlogPage() {
             <div>
               <h2 className="text-2xl font-bold mb-6">Latest Articles</h2>
               <div className="grid md:grid-cols-2 gap-6">
-                {remainingPosts.map((post, index) => (
+                {remainingPosts.map((post: any, index: number) => (
                   <div
                     key={index}
                     className="border border-border rounded-lg overflow-hidden hover:shadow-md transition-all"
@@ -186,16 +188,18 @@ export default async function BlogPage() {
                     <div className="p-6">
                       <div className="flex flex-wrap gap-2 mb-3">
                         {post.categories &&
-                          post.categories.map((category, index) => (
-                            <Link
-                              key={index}
-                              href={`/blog/category/${category.category_id.slug}`}
-                            >
-                              <Badge variant="secondary">
-                                {category.category_id.name}
-                              </Badge>
-                            </Link>
-                          ))}
+                          post.categories.map(
+                            (category: any, index: number) => (
+                              <Link
+                                key={index}
+                                href={`/blog/category/${category.category_id.slug}`}
+                              >
+                                <Badge variant="secondary">
+                                  {category.category_id.name}
+                                </Badge>
+                              </Link>
+                            ),
+                          )}
                       </div>
                       <Link href={`/blog/${post.slug}`}>
                         <h3 className="text-xl font-bold mb-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -234,7 +238,7 @@ export default async function BlogPage() {
             <div className="border border-border rounded-lg p-6 bg-card">
               <h3 className="text-xl font-bold mb-4">Categories</h3>
               <div className="space-y-2">
-                {categories.map((category) => (
+                {categories.map((category: any) => (
                   <Link
                     key={category.id}
                     href={`/blog/category/${category.slug}`}

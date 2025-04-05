@@ -176,7 +176,7 @@ export default async function TagPage({ params }: Props) {
           <div className="lg:w-2/3">
             {posts.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
-                {posts.map((post, index) => (
+                {posts.map((post: any, index: number) => (
                   <div
                     key={index}
                     className="border border-border rounded-lg overflow-hidden hover:shadow-md transition-all"
@@ -191,7 +191,7 @@ export default async function TagPage({ params }: Props) {
                     <div className="p-6">
                       <div className="flex flex-wrap gap-2 mb-3">
                         {post.categories &&
-                          post.categories.map((category, idx) => (
+                          post.categories.map((category: any, idx: number) => (
                             <Link
                               key={idx}
                               href={`/blog/category/${category.category_id.slug}`}
@@ -247,7 +247,7 @@ export default async function TagPage({ params }: Props) {
             <div className="border border-border rounded-lg p-6 bg-card">
               <h3 className="text-xl font-bold mb-4">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {allTags.map((t) => (
+                {allTags.map((t: any) => (
                   <Link key={t.id} href={`/blog/tag/${t.slug}`}>
                     <Badge
                       variant={t.id === tag.id ? "default" : "outline"}
@@ -264,7 +264,7 @@ export default async function TagPage({ params }: Props) {
             <div className="border border-border rounded-lg p-6 bg-card">
               <h3 className="text-xl font-bold mb-4">Categories</h3>
               <div className="space-y-2">
-                {categories.map((category) => (
+                {categories.map((category: any) => (
                   <Link
                     key={category.id}
                     href={`/blog/category/${category.slug}`}
