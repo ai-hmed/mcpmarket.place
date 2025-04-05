@@ -65,7 +65,10 @@ async function getTagPosts(tagId: string) {
       .eq("published", true)
       .in(
         "id",
-        supabase.from("blog_posts_tags").select("post_id").eq("tag_id", tagId),
+        supabase
+          .from("blog_posts_tags")
+          .select("post_id")
+          .eq("tag_id", tagId) as any,
       )
       .order("published_at", { ascending: false });
 
