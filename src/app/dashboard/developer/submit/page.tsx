@@ -43,9 +43,9 @@ export default function SubmitServerPage() {
       os: "",
     },
     providers: [
-      { name: "AWS", selected: false, regions: [] },
-      { name: "Azure", selected: false, regions: [] },
-      { name: "GCP", selected: false, regions: [] },
+      { name: "AWS", selected: false, regions: [] as string[] },
+      { name: "Azure", selected: false, regions: [] as string[] },
+      { name: "GCP", selected: false, regions: [] as string[] },
     ],
     pricing: {
       model: "free",
