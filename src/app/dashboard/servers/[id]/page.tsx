@@ -188,26 +188,28 @@ export default async function ServerDetailsPage({
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-2">
-                        {serverData.features.map((feature, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <div className="mt-1 rounded-full bg-green-500/20 p-1">
-                              <svg
-                                className="h-3 w-3 text-green-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                            </div>
-                            <span>{feature}</span>
-                          </li>
-                        ))}
+                        {serverData.features.map(
+                          (feature: string, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <div className="mt-1 rounded-full bg-green-500/20 p-1">
+                                <svg
+                                  className="h-3 w-3 text-green-500"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              </div>
+                              <span>{feature}</span>
+                            </li>
+                          ),
+                        )}
                       </ul>
                     </CardContent>
                   </Card>
@@ -221,33 +223,37 @@ export default async function ServerDetailsPage({
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {serverData.providers.map((provider, index) => (
-                          <Card key={index} className="border border-border">
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-lg">
-                                {provider.name}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-sm">
-                                <p className="text-muted-foreground mb-1">
-                                  Available regions:
-                                </p>
-                                <div className="flex flex-wrap gap-1">
-                                  {provider.regions.map((region, idx) => (
-                                    <Badge
-                                      key={idx}
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      {region}
-                                    </Badge>
-                                  ))}
+                        {serverData.providers.map(
+                          (provider: any, index: number) => (
+                            <Card key={index} className="border border-border">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-lg">
+                                  {provider.name}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-sm">
+                                  <p className="text-muted-foreground mb-1">
+                                    Available regions:
+                                  </p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {provider.regions.map(
+                                      (region: string, idx: number) => (
+                                        <Badge
+                                          key={idx}
+                                          variant="outline"
+                                          className="text-xs"
+                                        >
+                                          {region}
+                                        </Badge>
+                                      ),
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                              </CardContent>
+                            </Card>
+                          ),
+                        )}
                       </div>
                     </CardContent>
                   </Card>
