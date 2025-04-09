@@ -72,7 +72,7 @@ export default function ServersClientWrapper({
           </p>
         </div>
       ) : (
-        <ServerGrid servers={filteredServers} />
+        <ServerGrid />
       )}
     </div>
   );
