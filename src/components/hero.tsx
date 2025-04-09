@@ -9,7 +9,13 @@ export default function Hero() {
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-gray-900 to-purple-950 opacity-80" />
       {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.2"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')" }}></div>
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage:
+            'url(\'data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.2"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E\')',
+        }}
+      ></div>
 
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -42,7 +48,9 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Your premier marketplace for Model Content Protocol servers. Discover, deploy, and manage with one-click deployment across multiple cloud providers.
+              Your premier marketplace for Model Content Protocol servers.
+              Discover, deploy, and manage with one-click deployment across
+              multiple cloud providers.
             </motion.p>
 
             <motion.div
