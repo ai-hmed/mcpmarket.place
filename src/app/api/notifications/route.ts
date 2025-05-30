@@ -13,36 +13,41 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // In a real implementation, you would fetch notifications from the database
-  // For now, we'll return mock data
-  const mockNotifications = [
-    {
-      id: "1",
-      title: "Deployment Successful",
-      message: "Your server has been deployed successfully.",
-      type: "success",
-      read: false,
-      timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-    },
-    {
-      id: "2",
-      title: "New Server Available",
-      message: "A new server has been added to the catalog.",
-      type: "info",
-      read: true,
-      timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
-    },
-    {
-      id: "3",
-      title: "Server Update",
-      message: "One of your saved servers has been updated.",
-      type: "info",
-      read: false,
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-    },
-  ];
+  try {
+    // Fetch notifications from the database
+    const { data: notifications, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-  return NextResponse.json(mockNotifications);
+    if (error) {
+      console.error("Error fetching notifications:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch notifications" },
+        { status: 500 },
+      );
+    }
+
+    // Transform the data to match the expected format
+    const formattedNotifications = notifications.map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      read: notification.read,
+      timestamp: new Date(notification.created_at),
+    }));
+
+    return NextResponse.json(formattedNotifications);
+  } catch (error) {
+    console.error("Error in notifications API:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 }
 
 // PATCH /api/notifications/:id - Mark notification as read
@@ -68,10 +73,35 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // In a real implementation, you would update the notification in the database
-    // For now, we'll just return success
-    return NextResponse.json({ success: true });
+    // Update the notification in the database
+    const { data, error } = await supabase
+      .from("notifications")
+      .update({
+        read: read !== undefined ? read : true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select();
+
+    if (error) {
+      console.error("Error updating notification:", error);
+      return NextResponse.json(
+        { error: "Failed to update notification" },
+        { status: 500 },
+      );
+    }
+
+    if (!data || data.length === 0) {
+      return NextResponse.json(
+        { error: "Notification not found" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ success: true, notification: data[0] });
   } catch (error) {
+    console.error("Error in PATCH notifications:", error);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }
@@ -98,7 +128,28 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  // In a real implementation, you would delete the notification from the database
-  // For now, we'll just return success
-  return NextResponse.json({ success: true });
+  try {
+    // Delete the notification from the database
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error deleting notification:", error);
+      return NextResponse.json(
+        { error: "Failed to delete notification" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error in DELETE notifications:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 }

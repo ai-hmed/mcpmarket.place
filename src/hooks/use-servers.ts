@@ -453,38 +453,40 @@ export function useServers() {
 
       const data = await response.json();
 
-      // If no data is returned, try to fetch from GitHub
-      if (!data || data.length === 0) {
-        console.log("No servers found in database, trying GitHub...");
-        try {
-          const githubResponse = await fetch(
-            `/api/github/servers?${params.toString()}`,
-          );
-
-          if (githubResponse.ok) {
-            const githubData = await githubResponse.json();
-
-            if (githubData && githubData.length > 0) {
-              console.log("Found servers from GitHub");
-              setServers(githubData);
-              setFilteredServers(githubData);
-              setLoading(false);
-              return;
-            }
-          }
-        } catch (githubErr) {
-          console.error("Error fetching from GitHub:", githubErr);
-        }
-
-        // If GitHub fetch fails or returns no data, use mock data
-        console.log("No servers found in GitHub, using mock data");
-        setServers(mockServers);
-        setFilteredServers(mockServers);
-      } else {
+      // If we have data from the database, use it
+      if (data && data.length > 0) {
         setServers(data);
         setFilteredServers(data);
+        setLoading(false);
+        return;
       }
 
+      // If no data from database, try GitHub as fallback
+      console.log("No servers found in database, trying GitHub...");
+      try {
+        const githubResponse = await fetch(
+          `/api/github/servers?${params.toString()}`,
+        );
+
+        if (githubResponse.ok) {
+          const githubData = await githubResponse.json();
+
+          if (githubData && githubData.length > 0) {
+            console.log("Found servers from GitHub");
+            setServers(githubData);
+            setFilteredServers(githubData);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (githubErr) {
+        console.error("Error fetching from GitHub:", githubErr);
+      }
+
+      // If both database and GitHub fail, use mock data as final fallback
+      console.log("Using mock data as fallback");
+      setServers(mockServers);
+      setFilteredServers(mockServers);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching servers:", err);

@@ -63,12 +63,51 @@ export default function SubmitServerPage() {
     setActiveStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would submit the form data to your backend
-    console.log("Form submitted:", formData);
-    // Redirect to success page or show success message
-    alert("Server submitted successfully! It will be reviewed by our team.");
+
+    try {
+      // Transform form data to match API expectations
+      const submitData = {
+        title: formData.name,
+        description: formData.fullDescription,
+        shortDescription: formData.shortDescription,
+        category: formData.category,
+        features: formData.features.filter((f) => f.trim() !== ""),
+        specs: formData.specs,
+        providers: formData.providers
+          .filter((p) => p.selected)
+          .map((p) => ({
+            name: p.name,
+            regions: p.regions,
+          })),
+        pricing: formData.pricing,
+        status: "draft", // Submitted servers start as draft for review
+      };
+
+      const response = await fetch("/api/servers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit server");
+      }
+
+      const result = await response.json();
+
+      // Redirect to success page with server ID
+      window.location.href = `/dashboard/developer/submit/success?id=${result.id}`;
+    } catch (error) {
+      console.error("Error submitting server:", error);
+      alert(
+        `Failed to submit server: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   };
 
   return (
