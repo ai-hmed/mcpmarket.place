@@ -176,7 +176,7 @@ function transformGitHubRepoToServer(repo: any): ServerData {
       { name: "GCP", regions: ["us-central1", "europe-west1", "asia-east1"] },
     ],
     author: repo.owner.login,
-    rating: (Math.random() * 4 + 1).toFixed(1),
+    rating: Math.round((Math.random() * 4 + 1) * 10) / 10,
     icon: repo.owner.avatar_url,
     downloads: repo.stargazers_count.toString(),
     status: "Available",
