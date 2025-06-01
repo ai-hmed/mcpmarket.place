@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import DashboardNavbar from "@/components/dashboard-navbar";
 import { Button } from "@/components/ui/button";
 import {
@@ -185,6 +186,158 @@ export default function DeployServer() {
   return (
     <div className="min-h-screen bg-background">
       <DashboardNavbar />
+      <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /><span className="ml-2">Loading...</span></div>}>
+        <DeployPageContent />
+      </Suspense>
+    </div>
+  );
+}
+
+function DeployPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedServer, setSelectedServer] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState("newest");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+
+  const {
+    servers,
+    loading: serversLoading,
+    error,
+    categories,
+    handleSearch,
+    handleFilterChange,
+    refreshServers,
+  } = useServers();
+
+  // Fetch cloud providers
+  const [providers, setProviders] = useState<any[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+
+  // Function to fetch providers
+  const fetchProviders = async () => {
+    try {
+      setLoadingProviders(true);
+      const response = await fetch("/api/cloud-providers");
+      if (response.ok) {
+        const data = await response.json();
+        setProviders(data);
+      }
+      setLoadingProviders(false);
+    } catch (error) {
+      console.error("Error fetching providers:", error);
+      setLoadingProviders(false);
+    }
+  };
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        setLoading(true);
+        const supabase = createClient();
+
+        // First refresh the session
+        await supabase.auth.refreshSession();
+
+        // Then get the user
+        const { data, error } = await supabase.auth.getUser();
+
+        if (error) {
+          console.error("Auth error in deploy page:", error);
+          return;
+        }
+
+        if (!data.user) {
+          console.log("No user found in deploy page");
+          return;
+        }
+
+        console.log("User authenticated in deploy page:", data.user.id);
+        setUser(data.user);
+      } catch (error) {
+        console.error("Authentication error in deploy page:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Fetch data regardless of auth state - middleware will handle redirects if needed
+    const loadData = async () => {
+      try {
+        await checkUser();
+        await fetchProviders();
+        await refreshServers();
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
+    };
+
+    loadData();
+  }, [refreshServers]);
+
+  const handleSelectServer = (serverId: string) => {
+    setSelectedServer(serverId);
+  };
+
+  const handleContinue = () => {
+    if (selectedServer) {
+      router.push(`/dashboard/deploy/configure?server=${selectedServer}`);
+    }
+  };
+
+  const handleCancel = () => {
+    router.push("/dashboard");
+  };
+
+  // Sort servers based on the selected sort option
+  const sortedServers = [...servers].sort((a, b) => {
+    if (sortBy === "newest") {
+      return 0; // Mock sorting, would use timestamps in real app
+    } else if (sortBy === "popular") {
+      return b.deployments - a.deployments;
+    } else if (sortBy === "az") {
+      return a.title.localeCompare(b.title);
+    }
+    return 0;
+  });
+
+  // Filter servers by category if a specific category is selected
+  const filteredServers =
+    categoryFilter === "all"
+      ? sortedServers
+      : sortedServers.filter(
+          (server) =>
+            server.category.toLowerCase() === categoryFilter.toLowerCase(),
+        );
+
+  // Get recent servers (first 3)
+  const recentServers = sortedServers.slice(0, 3);
+
+  // Get popular servers (sorted by deployments)
+  const popularServers = [...sortedServers]
+    .sort((a, b) => b.deployments - a.deployments)
+    .slice(0, 3);
+
+  // Add a useEffect to handle the case when user data is loaded after initial render
+  useEffect(() => {
+    if (user && !loading) {
+      fetchProviders();
+      refreshServers();
+    }
+  }, [user, loading]);
+
+  if (loading || serversLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading...</span>
+      </div>
+    );
+  }
+
+  return (
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8 max-w-4xl mx-auto">
           <div className="flex flex-col gap-2">
@@ -434,6 +587,4 @@ export default function DeployServer() {
           </div>
         </div>
       </main>
-    </div>
-  );
 }

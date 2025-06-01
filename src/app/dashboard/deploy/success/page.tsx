@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import DashboardNavbar from "@/components/dashboard-navbar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,24 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function DeploymentSuccess() {
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardNavbar />
+      <Suspense fallback={
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center gap-4 max-w-md mx-auto text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <h1 className="text-2xl font-bold">Loading deployment details...</h1>
+          </div>
+        </main>
+      }>
+        <DeploymentSuccessContent />
+      </Suspense>
+    </div>
+  );
+}
+
+function DeploymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const deploymentId = searchParams.get("id");
@@ -101,8 +120,6 @@ export default function DeploymentSuccess() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNavbar />
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8 max-w-2xl mx-auto">
           <div className="flex flex-col items-center text-center gap-4">
@@ -293,6 +310,4 @@ export default function DeploymentSuccess() {
           </div>
         </div>
       </main>
-    </div>
-  );
 }

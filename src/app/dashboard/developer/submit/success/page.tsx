@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import DashboardNavbar from "@/components/dashboard-navbar";
@@ -17,6 +17,24 @@ import { CheckCircle, ArrowRight, Server } from "lucide-react";
 import { createClient } from "../../../../../../supabase/client";
 
 export default function SubmitSuccessPage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardNavbar />
+      <Suspense fallback={
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <h1 className="text-2xl font-bold">Loading...</h1>
+          </div>
+        </div>
+      }>
+        <SubmitSuccessContent />
+      </Suspense>
+    </div>
+  );
+}
+
+function SubmitSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const serverId = searchParams.get("id");
@@ -54,9 +72,6 @@ export default function SubmitSuccessPage() {
   }, [serverId]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNavbar />
-
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
           <Card className="border-border bg-card">
@@ -137,6 +152,4 @@ export default function SubmitSuccessPage() {
           </Card>
         </div>
       </div>
-    </div>
-  );
 }

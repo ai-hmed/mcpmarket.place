@@ -4,7 +4,7 @@ import { createClient } from "@/supabase/server";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const query = searchParams.get("query") || "topic:mcp-server";
 
     // Authenticate the user
