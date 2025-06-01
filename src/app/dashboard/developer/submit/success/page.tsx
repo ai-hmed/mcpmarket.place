@@ -152,4 +152,4 @@ function SubmitSuccessContent() {
           </Card>
         </div>
       </div>
-}
+  );
