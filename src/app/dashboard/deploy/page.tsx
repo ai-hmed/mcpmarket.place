@@ -40,6 +40,21 @@ import { useServers, ServerData } from "@/hooks/use-servers";
 import SearchFilter from "@/components/search-filter";
 
 export default function DeployServer() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading...</span>
+        </div>
+      }
+    >
+      <DeployServerContent />
+    </Suspense>
+  );
+}
+
+function DeployServerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
