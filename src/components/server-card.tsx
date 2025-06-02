@@ -58,7 +58,7 @@ export default function ServerCard({
   }, [id]);
 
   const handleNavigate = () => {
-    router.push(`/dashboard/servers/${id}`);
+    router.push(`/servers/${id}`);
   };
 
   const handleDeploy = () => {
