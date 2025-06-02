@@ -20,6 +20,11 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
+  // Ensure we have a valid origin for the redirect URL
+  const redirectUrl = origin
+    ? `${origin}/auth/callback`
+    : "https://compassionate-feynman7-kd8d3.view-3.tempo-dev.app/auth/callback";
+
   const {
     data: { user },
     error,
@@ -27,7 +32,7 @@ export const signUpAction = async (formData: FormData) => {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: redirectUrl,
       data: {
         full_name: fullName,
         email: email,
@@ -35,11 +40,20 @@ export const signUpAction = async (formData: FormData) => {
     },
   });
 
-  console.log("After signUp", error);
+  console.log("After signUp", error, "User:", user);
 
   if (error) {
-    console.error(error.code + " " + error.message);
+    console.error("Signup error:", error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
+  }
+
+  // Check if email confirmation was sent
+  if (user && user.identities && user.identities.length === 0) {
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "This email is already registered. Please sign in or reset your password.",
+    );
   }
 
   if (user) {
