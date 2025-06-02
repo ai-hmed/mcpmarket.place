@@ -11,8 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -22,182 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  ArrowRight,
-  Check,
-  Cloud,
-  CreditCard,
-  HardDrive,
-  Server,
-  Settings,
-  Shield,
-  Loader2,
-} from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "../../../../supabase/client";
-import { useServers, ServerData } from "@/hooks/use-servers";
+import { useServers } from "@/hooks/use-servers";
 import SearchFilter from "@/components/search-filter";
 
 export default function DeployServer() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading...</span>
-        </div>
-      }
-    >
-      <DeployServerContent />
-    </Suspense>
-  );
-}
-
-function DeployServerContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedServer, setSelectedServer] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState("newest");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-
-  const {
-    servers,
-    loading: serversLoading,
-    error,
-    categories,
-    handleSearch,
-    handleFilterChange,
-    refreshServers,
-  } = useServers();
-
-  // Fetch cloud providers
-  const [providers, setProviders] = useState<any[]>([]);
-  const [loadingProviders, setLoadingProviders] = useState(false);
-
-  // Function to fetch providers
-  const fetchProviders = async () => {
-    try {
-      setLoadingProviders(true);
-      const response = await fetch("/api/cloud-providers");
-      if (response.ok) {
-        const data = await response.json();
-        setProviders(data);
-      }
-      setLoadingProviders(false);
-    } catch (error) {
-      console.error("Error fetching providers:", error);
-      setLoadingProviders(false);
-    }
-  };
-
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        setLoading(true);
-        const supabase = createClient();
-
-        // First refresh the session
-        await supabase.auth.refreshSession();
-
-        // Then get the user
-        const { data, error } = await supabase.auth.getUser();
-
-        if (error) {
-          console.error("Auth error in deploy page:", error);
-          return;
-        }
-
-        if (!data.user) {
-          console.log("No user found in deploy page");
-          return;
-        }
-
-        console.log("User authenticated in deploy page:", data.user.id);
-        setUser(data.user);
-      } catch (error) {
-        console.error("Authentication error in deploy page:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Fetch data regardless of auth state - middleware will handle redirects if needed
-    const loadData = async () => {
-      try {
-        await checkUser();
-        await fetchProviders();
-        await refreshServers();
-      } catch (error) {
-        console.error("Error loading data:", error);
-      }
-    };
-
-    loadData();
-  }, [refreshServers]);
-
-  const handleSelectServer = (serverId: string) => {
-    setSelectedServer(serverId);
-  };
-
-  const handleContinue = () => {
-    if (selectedServer) {
-      router.push(`/dashboard/deploy/configure?server=${selectedServer}`);
-    }
-  };
-
-  const handleCancel = () => {
-    router.push("/dashboard");
-  };
-
-  // Sort servers based on the selected sort option
-  const sortedServers = [...servers].sort((a, b) => {
-    if (sortBy === "newest") {
-      return 0; // Mock sorting, would use timestamps in real app
-    } else if (sortBy === "popular") {
-      return b.deployments - a.deployments;
-    } else if (sortBy === "az") {
-      return a.title.localeCompare(b.title);
-    }
-    return 0;
-  });
-
-  // Filter servers by category if a specific category is selected
-  const filteredServers =
-    categoryFilter === "all"
-      ? sortedServers
-      : sortedServers.filter(
-          (server) =>
-            server.category.toLowerCase() === categoryFilter.toLowerCase(),
-        );
-
-  // Get recent servers (first 3)
-  const recentServers = sortedServers.slice(0, 3);
-
-  // Get popular servers (sorted by deployments)
-  const popularServers = [...sortedServers]
-    .sort((a, b) => b.deployments - a.deployments)
-    .slice(0, 3);
-
-  // Add a useEffect to handle the case when user data is loaded after initial render
-  useEffect(() => {
-    if (user && !loading) {
-      fetchProviders();
-      refreshServers();
-    }
-  }, [user, loading]);
-
-  if (loading || serversLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading...</span>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <DashboardNavbar />
@@ -217,87 +47,78 @@ function DeployServerContent() {
 
 function DeployPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("newest");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [providers, setProviders] = useState<any[]>([]);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const {
     servers,
     loading: serversLoading,
-    error,
+    error: serversError,
     categories,
     handleSearch,
     handleFilterChange,
     refreshServers,
   } = useServers();
 
-  // Fetch cloud providers
-  const [providers, setProviders] = useState<any[]>([]);
-  const [loadingProviders, setLoadingProviders] = useState(false);
-
-  // Function to fetch providers
-  const fetchProviders = async () => {
-    try {
-      setLoadingProviders(true);
-      const response = await fetch("/api/cloud-providers");
-      if (response.ok) {
-        const data = await response.json();
-        setProviders(data);
-      }
-      setLoadingProviders(false);
-    } catch (error) {
-      console.error("Error fetching providers:", error);
-      setLoadingProviders(false);
-    }
-  };
-
+  // Initialize user and data
   useEffect(() => {
-    const checkUser = async () => {
+    const initializeData = async () => {
       try {
         setLoading(true);
+        setAuthError(null);
+
         const supabase = createClient();
 
-        // First refresh the session
-        await supabase.auth.refreshSession();
+        // Get user session
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-        // Then get the user
-        const { data, error } = await supabase.auth.getUser();
-
-        if (error) {
-          console.error("Auth error in deploy page:", error);
+        if (userError) {
+          console.error("Auth error:", userError);
+          setAuthError("Authentication failed. Please sign in again.");
           return;
         }
 
-        if (!data.user) {
-          console.log("No user found in deploy page");
+        if (!user) {
+          console.log("No user found, redirecting to sign in");
+          router.push("/sign-in");
           return;
         }
 
-        console.log("User authenticated in deploy page:", data.user.id);
-        setUser(data.user);
+        setUser(user);
+
+        // Fetch cloud providers
+        try {
+          const response = await fetch("/api/cloud-providers");
+          if (response.ok) {
+            const data = await response.json();
+            setProviders(data);
+          } else {
+            console.warn("Failed to fetch cloud providers, using defaults");
+          }
+        } catch (error) {
+          console.warn("Error fetching providers:", error);
+        }
+
+        // Refresh servers data
+        await refreshServers();
       } catch (error) {
-        console.error("Authentication error in deploy page:", error);
+        console.error("Error initializing data:", error);
+        setAuthError("Failed to load data. Please refresh the page.");
       } finally {
         setLoading(false);
       }
     };
 
-    // Fetch data regardless of auth state - middleware will handle redirects if needed
-    const loadData = async () => {
-      try {
-        await checkUser();
-        await fetchProviders();
-        await refreshServers();
-      } catch (error) {
-        console.error("Error loading data:", error);
-      }
-    };
-
-    loadData();
-  }, [refreshServers]);
+    initializeData();
+  }, [router, refreshServers]);
 
   const handleSelectServer = (serverId: string) => {
     setSelectedServer(serverId);
@@ -342,20 +163,47 @@ function DeployPageContent() {
     .sort((a, b) => b.deployments - a.deployments)
     .slice(0, 3);
 
-  // Add a useEffect to handle the case when user data is loaded after initial render
-  useEffect(() => {
-    if (user && !loading) {
-      fetchProviders();
-      refreshServers();
-    }
-  }, [user, loading]);
-
+  // Show loading state
   if (loading || serversLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading...</span>
-      </div>
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Loading deploy page...</span>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Show auth error
+  if (authError) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-red-500 mb-4">{authError}</p>
+            <Button onClick={() => router.push("/sign-in")}>Sign In</Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Show servers error
+  if (serversError) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-red-500 mb-4">
+              Error loading servers: {serversError}
+            </p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </div>
+      </main>
     );
   }
 
@@ -402,46 +250,12 @@ function DeployPageContent() {
           <TabsContent value="recent" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recentServers.map((server, index) => (
-                <Card
-                  key={index}
-                  className={`border hover:shadow-md cursor-pointer transition-all ${selectedServer === server.id ? "border-primary bg-primary/5" : "border-border"}`}
-                  onClick={() => handleSelectServer(server.id)}
-                >
-                  <div className="relative h-40 w-full overflow-hidden bg-muted">
-                    <img
-                      src={server.imageUrl}
-                      alt={server.title}
-                      className="h-full w-full object-cover transition-all hover:scale-105"
-                    />
-                    <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-xs font-medium px-2 py-1 rounded">
-                      {server.category}
-                    </div>
-                    {selectedServer === server.id && (
-                      <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full p-1">
-                        <Check className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                  <CardHeader className="pb-2">
-                    <CardTitle>{server.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      {server.description}
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className={`w-full ${selectedServer === server.id ? "bg-primary hover:bg-primary/90" : "bg-blue-600 hover:bg-blue-500"}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectServer(server.id);
-                      }}
-                    >
-                      {selectedServer === server.id ? "Selected" : "Select"}
-                    </Button>
-                  </CardFooter>
-                </Card>
+                <ServerCard
+                  key={server.id}
+                  server={server}
+                  selectedServer={selectedServer}
+                  onSelect={handleSelectServer}
+                />
               ))}
             </div>
           </TabsContent>
@@ -449,51 +263,13 @@ function DeployPageContent() {
           <TabsContent value="popular" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {popularServers.map((server, index) => (
-                <Card
-                  key={index}
-                  className={`border hover:shadow-md cursor-pointer transition-all ${selectedServer === server.id ? "border-primary bg-primary/5" : "border-border"}`}
-                  onClick={() => handleSelectServer(server.id)}
-                >
-                  <div className="relative h-40 w-full overflow-hidden bg-muted">
-                    <img
-                      src={server.imageUrl}
-                      alt={server.title}
-                      className="h-full w-full object-cover transition-all hover:scale-105"
-                    />
-                    <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-xs font-medium px-2 py-1 rounded">
-                      {server.category}
-                    </div>
-                    {selectedServer === server.id && (
-                      <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full p-1">
-                        <Check className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle>{server.title}</CardTitle>
-                      <div className="text-xs text-muted-foreground">
-                        {server.deployments.toLocaleString()} deployments
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      {server.description}
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className={`w-full ${selectedServer === server.id ? "bg-primary hover:bg-primary/90" : "bg-blue-600 hover:bg-blue-500"}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectServer(server.id);
-                      }}
-                    >
-                      {selectedServer === server.id ? "Selected" : "Select"}
-                    </Button>
-                  </CardFooter>
-                </Card>
+                <ServerCard
+                  key={server.id}
+                  server={server}
+                  selectedServer={selectedServer}
+                  onSelect={handleSelectServer}
+                  showDeployments={true}
+                />
               ))}
             </div>
           </TabsContent>
@@ -544,51 +320,13 @@ function DeployPageContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredServers.map((server, index) => (
-                <Card
-                  key={index}
-                  className={`border hover:shadow-md cursor-pointer transition-all ${selectedServer === server.id ? "border-primary bg-primary/5" : "border-border"}`}
-                  onClick={() => handleSelectServer(server.id)}
-                >
-                  <div className="relative h-40 w-full overflow-hidden bg-muted">
-                    <img
-                      src={server.imageUrl}
-                      alt={server.title}
-                      className="h-full w-full object-cover transition-all hover:scale-105"
-                    />
-                    <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-xs font-medium px-2 py-1 rounded">
-                      {server.category}
-                    </div>
-                    {selectedServer === server.id && (
-                      <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full p-1">
-                        <Check className="h-4 w-4" />
-                      </div>
-                    )}
-                  </div>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle>{server.title}</CardTitle>
-                      <div className="text-xs text-muted-foreground">
-                        {server.deployments.toLocaleString()} deployments
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      {server.description}
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className={`w-full ${selectedServer === server.id ? "bg-primary hover:bg-primary/90" : "bg-blue-600 hover:bg-blue-500"}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectServer(server.id);
-                      }}
-                    >
-                      {selectedServer === server.id ? "Selected" : "Select"}
-                    </Button>
-                  </CardFooter>
-                </Card>
+                <ServerCard
+                  key={server.id}
+                  server={server}
+                  selectedServer={selectedServer}
+                  onSelect={handleSelectServer}
+                  showDeployments={true}
+                />
               ))}
             </div>
           </TabsContent>
@@ -609,5 +347,78 @@ function DeployPageContent() {
         </div>
       </div>
     </main>
+  );
+}
+
+// Server card component for the deploy page
+interface ServerCardProps {
+  server: any;
+  selectedServer: string | null;
+  onSelect: (serverId: string) => void;
+  showDeployments?: boolean;
+}
+
+function ServerCard({
+  server,
+  selectedServer,
+  onSelect,
+  showDeployments = false,
+}: ServerCardProps) {
+  const isSelected = selectedServer === server.id;
+
+  return (
+    <Card
+      className={`border hover:shadow-md cursor-pointer transition-all ${
+        isSelected ? "border-primary bg-primary/5" : "border-border"
+      }`}
+      onClick={() => onSelect(server.id)}
+    >
+      <div className="relative h-40 w-full overflow-hidden bg-muted">
+        <img
+          src={
+            server.imageUrl ||
+            "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=80"
+          }
+          alt={server.title}
+          className="h-full w-full object-cover transition-all hover:scale-105"
+        />
+        <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-xs font-medium px-2 py-1 rounded">
+          {server.category}
+        </div>
+        {isSelected && (
+          <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full p-1">
+            <Check className="h-4 w-4" />
+          </div>
+        )}
+      </div>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-lg">{server.title}</CardTitle>
+          {showDeployments && (
+            <div className="text-xs text-muted-foreground">
+              {server.deployments?.toLocaleString() || 0} deployments
+            </div>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{server.description}</p>
+      </CardContent>
+      <CardFooter>
+        <Button
+          className={`w-full ${
+            isSelected
+              ? "bg-primary hover:bg-primary/90"
+              : "bg-blue-600 hover:bg-blue-500"
+          }`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(server.id);
+          }}
+        >
+          {isSelected ? "Selected" : "Select"}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

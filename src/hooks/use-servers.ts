@@ -445,20 +445,29 @@ export function useServers() {
       }
 
       // Try to fetch from database first
-      const response = await fetch(`/api/servers?${params.toString()}`);
+      try {
+        const response = await fetch(`/api/servers?${params.toString()}`);
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch servers from database");
-      }
+        if (response.ok) {
+          const data = await response.json();
 
-      const data = await response.json();
-
-      // If we have data from the database, use it
-      if (data && data.length > 0) {
-        setServers(data);
-        setFilteredServers(data);
-        setLoading(false);
-        return;
+          // If we have data from the database, use it
+          if (data && data.length > 0) {
+            setServers(data);
+            setFilteredServers(data);
+            setLoading(false);
+            return;
+          }
+        } else if (response.status === 401) {
+          // User not authenticated, use mock data
+          console.log("User not authenticated, using mock data");
+          setServers(mockServers);
+          setFilteredServers(mockServers);
+          setLoading(false);
+          return;
+        }
+      } catch (dbError) {
+        console.warn("Database fetch failed:", dbError);
       }
 
       // If no data from database, try GitHub as fallback
@@ -480,7 +489,7 @@ export function useServers() {
           }
         }
       } catch (githubErr) {
-        console.error("Error fetching from GitHub:", githubErr);
+        console.warn("Error fetching from GitHub:", githubErr);
       }
 
       // If both database and GitHub fail, use mock data as final fallback
