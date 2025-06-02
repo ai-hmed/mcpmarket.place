@@ -4,7 +4,8 @@ import { createClient } from "@/supabase/server";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = request.nextUrl;
+    const url = new URL(request.url);
+    const searchParams = url.searchParams;
     const owner = searchParams.get("owner");
     const repo = searchParams.get("repo");
 
